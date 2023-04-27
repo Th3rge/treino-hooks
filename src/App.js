@@ -1,32 +1,59 @@
-import React, { useState, useCallback } from 'react';
-import List from './List';
+import React, { useReducer, useState } from 'react';
 
-const App = () => {
-  const [text, setText] = useState('');
-  const [resourceType, setResourceType] = useState('posts');
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'add-task':
+      return {
+        ...state,
+        tasks: [...state.tasks, { name: action.payload, isCompleted: false }],
+        tasksCount: state.tasksCount + 1,
+      };
+    case 'toggle-task':
+      return {
+        ...state,
+        tasks: state.tasks.map((item, index) => {
+          index == action.payload
+            ? {
+                ...item,
+                isCompleted: !item.isCompleted,
+              }
+            : item;
+        }),
+      };
+    default:
+      return state;
+  }
+};
 
-  const getItems = useCallback(async () => {
-    console.log('getItems is being called!');
-    const response = await fetch(
-      `https://jsonplaceholder.typicode.com/${resourceType}`
-    );
-
-    const responseJSON = await response.json();
-
-    return responseJSON;
-  }, [resourceType]);
+const HookReducer2 = () => {
+  const [state, dispatch] = useReducer(reducer, { tasks: [], tasksCount: 0 });
+  const [inputValue, setInputValue] = useState('');
 
   return (
     <div>
-      <input value={text} onChange={(e) => e.target.value} />
+      <input
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+      />
 
-      <button onClick={() => setResourceType('posts')}>Posts</button>
-      <button onClick={() => setResourceType('comments')}>Comments</button>
-      <button onClick={() => setResourceType('todos')}>Todos</button>
+      <button
+        onClick={() =>
+          dispatch({ type: 'add-task', payload: inputValue }, setInputValue(''))
+        }
+      >
+        Adicionar
+      </button>
 
-      <List getItems={getItems} />
+      {state.tasks.map((task, index) => (
+        <p
+          onClick={() => dispatch({ type: 'toggle-task', payload: index })}
+          style={{ textDecoration: task.isCompleted ? 'line-through' : 'none' }}
+        >
+          {task.name}
+        </p>
+      ))}
     </div>
   );
 };
 
-export default App;
+export default HookReducer2;
