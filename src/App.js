@@ -1,28 +1,32 @@
-import React, { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
-import './style.css';
+import React, { useState, useCallback } from 'react';
+import List from './List';
 
-export default function App() {
-  const [name, setName] = useState('');
-  //const renders = useRef(0)
-  // const inputRef = useRef();
-  const previousName = useRef();
-  //  const focusInput = () => {
-  //     inputRef.current.focus()
-  //   }
+const App = () => {
+  const [text, setText] = useState('');
+  const [resourceType, setResourceType] = useState('posts');
 
-  useEffect(() => {
-    //renders.current = renders.current + 1;
-    previousName.current = name;
-  });
+  const getItems = useCallback(async () => {
+    console.log('getItems is being called!');
+    const response = await fetch(
+      `https://jsonplaceholder.typicode.com/${resourceType}`
+    );
+
+    const responseJSON = await response.json();
+
+    return responseJSON;
+  }, [resourceType]);
 
   return (
     <div>
-      <div>
-        <input value={name} onChange={(e) => setName(e.target.value)} />
-        <p>Hello! My name is {name}</p>
-        <p>And my name was {previousName.current}</p>
-      </div>
+      <input value={text} onChange={(e) => e.target.value} />
+
+      <button onClick={() => setResourceType('posts')}>Posts</button>
+      <button onClick={() => setResourceType('comments')}>Comments</button>
+      <button onClick={() => setResourceType('todos')}>Todos</button>
+
+      <List getItems={getItems} />
     </div>
   );
-}
+};
+
+export default App;
